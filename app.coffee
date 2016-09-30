@@ -1,23 +1,21 @@
-# Made with Framer
-# by Todd Hamilton
-# www.toddham.com
-
 # stack of scene indices
 history = [0]
 
 # timestamps of scene starts in seconds
-sceneStarts = [0, 31.5, 51.8, 93.5, 124.5, 167.8, 198.9, 1000]
+sceneStarts = [0, 33.6, 58.4, 100.6, 139.2, 187.6, 220.9, 248]
 
+endScenes = [2, 5, 6]
+endScenePauseSegments = [[99, 100.6], [219.5, 220.9], [246.3, 248]]
 # scene descriptions 
 # [go on date?, yes, pay half, no don't pay - go to park?,yes to park, no to park]
 
 # timestamp of choice starts in seconds
-choiceStarts = [24, 48, 84, 121, 160.6, 194, 220]
+choiceStarts = [22.1, 48.5, 90.3, 129.6, 175.3, 214.5, 242.2]
 
 # choice button coords [button left: [[xMin, xMax], [yMin, yMax]], button right: ...]
-normalChooseCoords = [[[110, 450], [340, 420]], [[960, 1220], [340, 420]]]
-tallChooseCoords = [[[85, 370], [250, 440]], [[930,1250], [250, 440]]]
-goToBeginningChooseCords = [[[100, 465], [340, 420]], [[-1, -1], [-1, -1]]]
+normalChooseCoords = [[[80, 550], [200, 475]], [[950, 1250], [200, 475]]]
+tallChooseCoords = [[[75, 375], [250, 440]], [[930,1250], [250, 440]]]
+goToBeginningChooseCords = [[[100, 500], [250, 450]], [[-1, -1], [-1, -1]]]
 
 # which scene links to which scene 
 # [[0's left scene #, 0's right scene #], [1's left scene #, 1's right scene #],....]
@@ -46,7 +44,7 @@ videoContainer = new Layer
 videoLayer = new VideoLayer
 	width: 1320
 	height: 750
-	video: "images/dating_small_2.m4v"
+	video: "images/dating_edited.mp4"
 	superLayer: videoContainer
 
 # center everything on screen
@@ -79,65 +77,19 @@ videoLayer.player.setAttribute('preload', 'auto')
 # 		time:0.1
 # 		curve:'spring(900,30,0)'
 
-# create layer for left choice icon
-leftIconLayer = new Layer
-	width: 100
-	height: 100
-	superLayer: videoContainer
-	opacity: 0.0
-	
-leftIconLayer.states.add
-	normal: 
-		image:'images/icon.svg'
-		x: 200
-		y: 340
-		opacity: 1.0
-
-# create layer for right choice icon
-rightIconLayer = new Layer
-	width: 100
-	height: 100
-	superLayer: videoContainer
-	opacity: 0.0
-	
-rightIconLayer.states.add
-	normal: 
-		image:'images/icon.svg'
-		x: 1020
-		y: 340
-		opacity: 1.0
-
 # control bar to hold buttons and timeline
 controlBar = new Layer
-	width:500
+	width:400
 	height:100
 	backgroundColor:'rgba(0,0,0,0.75)'
 	clip:false
 	borderRadius:'8px'
 	superLayer:videoContainer
-
-# center the control bar
-controlBar.center()
-
+	opacity: 1.0
+	
 # position control bar towards the bottom of the video
-controlBar.y = videoLayer.maxY - controlBar.height - 10
-
-# play button
-playButton = new Layer
-	width:100
-	height:100
-	image:'images/play.png'
-	superLayer:controlBar
-
-# on/off volume button
-volumeButton = new Layer
-	width:100
-	height:100
-	image:'images/volume_on.png'
-	superLayer:controlBar
-
-# position the volume button to the right of play
-volumeButton.x = playButton.maxX
+controlBar.y = videoContainer.maxY - controlBar.height
+controlBar.x = videoContainer.width/2.0 - controlBar.width/2.0
 
 # back-scene layer
 backButton = new Layer
@@ -146,18 +98,15 @@ backButton = new Layer
 	image: 'images/back.png'
 	superLayer: controlBar
 
-# position back-scene button to the right of play
-backButton.x = volumeButton.maxX
-
-# skip to choice button
-skipToChoiceButton = new Layer
-	width: 100
-	height: 100
-	image: 'images/choose.png'
-	superLayer: controlBar
+# play button
+playButton = new Layer
+	width:100
+	height:100
+	image:'images/play.png'
+	superLayer:controlBar
 
 # position back-scene button to the right of play
-skipToChoiceButton.x = backButton.maxX
+playButton.x = backButton.maxX
 
 # home button
 homeButton = new Layer
@@ -165,10 +114,19 @@ homeButton = new Layer
 	height: 100
 	image: 'images/home.png'
 	superLayer: controlBar
-	
-# position home button to the right of choose
-homeButton.x = skipToChoiceButton.maxX	
 
+# position home button to the right of play
+homeButton.x = playButton.maxX	
+
+# skip to choice button
+skipToChoiceButton = new Layer
+	width: 100
+	height: 100
+	image: 'images/forward.png'
+	superLayer: controlBar
+
+# position skip button to the right of home
+skipToChoiceButton.x = homeButton.maxX
 # forward-scene layer
 forwardScene = new Layer
 	width: 1320
@@ -196,6 +154,8 @@ playButton.on Events.Click, ->
 
 # helper function for figuring out if a scene choose button is being pressed
 sceneChooseButtonChecker = (xCoord, yCoord) ->
+	
+	#print "checking for choice"
 	currScene = history[history.length - 1]
 
 	chooseLeft = chooseCoords[currScene][0]
@@ -206,54 +166,37 @@ sceneChooseButtonChecker = (xCoord, yCoord) ->
 	chooseRightX = chooseRight[0]
 	chooseRightY = chooseRight[1]
 	
+	pressedButton = false
 	# logic for left button choice
 	if xCoord >= chooseLeftX[0] and xCoord <= chooseLeftX[1] and yCoord >= chooseLeftY[0] and yCoord <= chooseLeftY[1]
-		print "pressed left"
+		#print "pressed left"
 		currScene = history[history.length - 1]
 		nextScene = sceneLinks[currScene][0]
-		#history.push(nextScene)
-		
-		videoLayer.player.currentTime = sceneStarts[nextScene]
-		videoLayer.player.play()
-	#videoLayer.player.fastSeek(sceneStarts[nextScene])
-
+		pressedButton = true
 	# logic for right button choice
 	else if xCoord >= chooseRightX[0] and xCoord <= chooseRightX[1] and yCoord >= chooseRightY[0] and yCoord <= chooseRightY[1]
-		print "pressed right"
+		#print "pressed right"
 		currScene = history[history.length - 1]
 		nextScene = sceneLinks[currScene][1]
-		#history.push(nextScene)
+		pressedButton = true
 		
+	if pressedButton
 		videoLayer.player.currentTime = sceneStarts[nextScene]
+		history.push(nextScene)
 		videoLayer.player.play()
-		#videoLayer.player.fastSeek(sceneStarts[nextScene])
+		playButton.image = "images/pause.png"
 
 # Function to handle forward scene choice
 forwardScene.on Events.Tap, (event) ->
 	
 	xCoord = event.point.x
 	yCoord = event.point.y
-	print event.point
+	currTime = videoLayer.player.currentTime
+	#print event.point
+	#print videoLayer.player.currentTime
 	# if a click occurs while buttons are active during scene, check if a button was clicked
-	if true in [Math.round(videoLayer.player.currentTime) in  [Math.round(x)-11.. Math.round(x)] for x in sceneStarts][0]
+	if true in [Math.round(currTime) in  [Math.round(choiceStarts[x])... Math.round(sceneStarts[x+1])+1] for x in [0...sceneStarts.length-1]][0]
 		sceneChooseButtonChecker(xCoord, yCoord)
-
-# Volume on/off toggle
-volumeButton.on Events.Click, ->
-	if videoLayer.player.muted == false
-		videoLayer.player.muted = true
-		volumeButton.image = "images/volume_off.png"
-	else
-		videoLayer.player.muted = false
-		volumeButton.image = "images/volume_on.png"
-
-	# simple bounce effect on click
-	volumeButton.scale = 1.15
-	volumeButton.animate
-		properties:
-			scale:1
-		time:0.1
-		curve:'spring(900,30,0)'
 
 # Function to handle back button
 backButton.on Events.Click, ->
@@ -261,12 +204,13 @@ backButton.on Events.Click, ->
 	if (history.length == 0)
 		history.push(0)
 	
-	print history[history.length - 1] 
-	
-	videoLayer.player.currentTime = choiceStarts[history[history.length - 1]]
+	#go to beginning if in first scene before first choice 
+	if videoLayer.player.currentTime < choiceStarts[0]
+		videoLayer.player.currentTime = 0
+	else
+		videoLayer.player.currentTime = choiceStarts[history[history.length - 1]]
 
 	videoLayer.player.play()
-		#videoLayer.player.fastSeek(choiceStarts[history[history.length - 1]])
 
 	# simple bounce effect on click
 	backButton.scale = 1.15
@@ -279,7 +223,7 @@ backButton.on Events.Click, ->
 # Function to handle choose button
 skipToChoiceButton.on Events.Click, ->
 	currScene = history[history.length - 1]
-	print choiceStarts[currScene]
+	#print choiceStarts[currScene]
 	
 	videoLayer.player.currentTime = choiceStarts[currScene]
 	videoLayer.player.play()
@@ -306,40 +250,51 @@ homeButton.on Events.Click, ->
 			scale:1
 		time:0.1
 		curve:'spring(900,30,0)'
-		
 	history = [0]
 		
+# pause properly at scene ends
+window.setInterval( ->
+	currTime = videoLayer.player.currentTime
+	currScene = history[history.length - 1]
+	# if at end of movie, pause
+	if (currTime > endScenePauseSegments[0][0] and currTime < endScenePauseSegments[0][1]) or (currTime > endScenePauseSegments[1][0] and currTime < endScenePauseSegments[1][1]) or (currTime > endScenePauseSegments[2][0] and currTime < endScenePauseSegments[2][1])
+		videoLayer.player.pause()
+		playButton.image = "images/play.png"
+	# if at end of choice, pause
+	else if currScene not in endScenes and currTime > sceneStarts[currScene + 1] - 4.0
+		videoLayer.player.pause()
+		playButton.image = "images/play.png"
+, 50)
+
 # white timeline bar
-#timeline = new Layer
-#	width:455
-#	height:10
-#	y:backButton.midY - 5
-#	x:backButton.maxX + 10
-#	borderRadius:'10px'
-#	backgroundColor:'#fff'
-#	clip:false
-#	superLayer: controlBar
-
-# progress bar to indicate elapsed time
-#progress = new Layer
-#	width:0
-#	height:timeline.height
-#	borderRadius:'10px'
-#	backgroundColor:'#03A9F4'
-#	superLayer: timeline
-
-# scrubber to change current time
+# timeline = new Layer
+# 	width:1000
+# 	height:50
+# 	borderRadius:'10px'
+# 	backgroundColor:'#fff'
+# 	clip:false
+# 	superLayer: videoContainer
+# 
+# #progress bar to indicate elapsed time
+# progress = new Layer
+# 	width:0
+# 	height:timeline.height
+# 	borderRadius:'10px'
+# 	backgroundColor:'#03A9F4'
+# 	superLayer: timeline
+# 
+# #scrubber to change current time
 # scrubber = new Layer
-# 	width:18
-# 	height:18
+# 	width:50
+# 	height:50
 # 	y:-4
 # 	borderRadius:'50%'
 # 	backgroundColor:'#fff'
 # 	shadowBlur:10
 # 	shadowColor:'rgba(0,0,0,0.75)'
 # 	superLayer: timeline
-
-# make scrubber draggable
+# 
+# #make scrubber draggable
 # scrubber.draggable.enabled = true
 # 
 # # limit dragging along x-axis
@@ -354,57 +309,28 @@ homeButton.on Events.Click, ->
 # 
 # # Disable dragging beyond constraints
 # scrubber.draggable.overdrag = false
-
-# helper function for scene transitions
-sceneUpdate = (currTime, targetScene) ->
-	
-	currScene = history[history.length - 1]
-	if sceneStarts[targetScene] + 0.3  <= currTime  and currTime < sceneStarts[targetScene+1] - 0.3 and currScene != targetScene
-
-		currScene = targetScene
-		history.push(currScene)
-
-		#print "lastScene: ", history[history.length - 2]
-		#print "currScene: ", currScene
-		print "history: ", history
-
-# Update the progress bar and scrubber AND CURR/LAST SCENE as video plays
-videoLayer.player.addEventListener "timeupdate", ->
-	#Calculate progress bar position
-	#newPos = (timeline.width / videoLayer.player.duration) * videoLayer.player.currentTime
-
-	#Update progress bar and scrubber
-	#scrubber.x = newPos
-	#progress.width = newPos	+ 10
-	# check if it's time to play a choice icon
-	#Update curr and last scene if scene has just switched
-	currTime = videoLayer.player.currentTime
-	sceneUpdate(currTime, scene) for scene in [0..sceneStarts.length]
-	
-	# check if currentTime is during a choice - then display icon
-	if true in [Math.round(currTime) in  [Math.round(choiceStarts[x]).. Math.round(sceneStarts[x+1])-1.5] for x in [0..sceneStarts.length-2]][0]
-		if leftIconLayer.states.current == "default"
-			leftIconLayer.states.switchInstant("normal")
-		if rightIconLayer.states.current == "default"
-			rightIconLayer.states.switchInstant("normal")
-	else
-		if leftIconLayer.states.current != "default"
-			leftIconLayer.states.switchInstant("default")
-		if rightIconLayer.states.current != "default"
-			rightIconLayer.states.switchInstant("default")
-
-# Pause the video at start of drag
+# 
+# # Update the progress bar and scrubber AND CURR/LAST SCENE as video plays
+# videoLayer.player.addEventListener "timeupdate", ->
+# 	#Calculate progress bar position
+# 	newPos = (timeline.width / videoLayer.player.duration) * videoLayer.player.currentTime
+# 
+# 	#Update progress bar and scrubber
+# 	scrubber.x = newPos
+# 	progress.width = newPos	+ 10
+# 
+# # Pause the video at start of drag
 # scrubber.on Events.DragStart, ->
 # 	videoLayer.player.pause()
 # 
-# Update Video Layer to current frame when scrubber is moved
+# #Update Video Layer to current frame when scrubber is moved
 # scrubber.on Events.DragMove, ->
 # 	progress.width = scrubber.x + 10
 # 
-# When finished dragging set currentTime and play video
+# #When finished dragging set currentTime and play video
 # scrubber.on Events.DragEnd, ->
 # 	newTime = Utils.round(videoLayer.player.duration * (scrubber.x / timeline.width),0);
 # 	videoLayer.player.currentTime = newTime
 # 	videoLayer.player.play()
 # 	playButton.image = "images/pause.png"
-
+# 
