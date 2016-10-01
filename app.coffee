@@ -1,4 +1,5 @@
 # stack of scene indices
+# 16x9 is the standard aspect ratio 
 history = [0]
 
 # timestamps of scene starts in seconds
@@ -34,21 +35,30 @@ chooseCoords = [
 
 # setup a container to hold everything
 videoContainer = new Layer
-	width: 1320
-	height: 750
+	x: 0
+	y: 0
+	width: Screen.width
+	height: Screen.height
 	backgroundColor: '#fff'
 	shadowBlur: 2
 	shadowColor: 'rgba(0,0,0,0.24)'
 
 # create the video layer
 videoLayer = new VideoLayer
-	width: 1320
-	height: 750
+	x: 0
+	y: 0
+	width: Screen.width
+	height: Screen.height
 	video: "images/dating_edited.mp4"
 	superLayer: videoContainer
 
-# center everything on screen
-videoContainer.center()
+thumbnailLayer = new Layer
+	x: 0
+	y: 0
+	width: Screen.width
+	height: Screen.height
+	image: "images/thumbnail.png"
+	superLayer: videoContainer
 
 # show load times
 videoLayer.player.setAttribute('preload', 'auto')
@@ -76,7 +86,7 @@ videoLayer.player.setAttribute('preload', 'auto')
 # 			scale:1
 # 		time:0.1
 # 		curve:'spring(900,30,0)'
-
+	
 # control bar to hold buttons and timeline
 controlBar = new Layer
 	width:400
@@ -129,11 +139,18 @@ skipToChoiceButton = new Layer
 skipToChoiceButton.x = homeButton.maxX
 # forward-scene layer
 forwardScene = new Layer
-	width: 1320
-	height: 620
+	x: 0
+	y: 0
+	width: Screen.width
+	height: Screen.height - controlBar.height
 	#video: "images/morning.mp4"
 	superLayer: videoContainer
 	backgroundColor: ""
+
+thumbnailLayer.bringToFront()
+controlBar.bringToFront()
+controlBar.on Events.Click, ->
+	thumbnailLayer.opacity = 0.0
 
 # Function to handle play/pause button
 playButton.on Events.Click, ->
@@ -152,6 +169,42 @@ playButton.on Events.Click, ->
 		time: 0.1
 		curve: 'spring(900,30,0)'
 
+#Check whether the device is mobile or not (versus Framer)
+# if Utils.isMobile()
+# 	# Add event listener on orientation change
+# 	window.addEventListener "orientationchange", -> 
+# 		updateOrientation()
+# else
+# 	# Listen for orientation changes on the device view
+# 	Framer.Device.on "change:orientation", ->
+# 		updateOrientation()
+# 
+# # resize layers appropriately every time there's an orientation change
+# updateOrientation = () ->
+# 	if Screen.width / Screen.height > (16.0/9.0)
+# 		width = (16.0/9.0) * Screen.height
+# 		limitingDimension = Screen.height
+# 		videoContainer.width = width
+# 		videoContainer.height = limitingDimension
+# 		videoLayer.width = width
+# 		videoLayer.height = limitingDimension
+# 		forwardScene.width = width
+# 		forwardScene.height = limitingDimension
+# 	else
+# 		limitingDimension = Screen.width
+# 		height = (9.0/16.0)*Screen.width
+# 		videoContainer.width = limitingDimension
+# 		videoContainer.height = height
+# 		videoLayer.width = limitingDimension
+# 		videoLayer.height = height
+# 		forwardScene.width = width
+# 		forwardScene.height = height
+# 	if controlBar.height + videoContainer.maxY < Screen.height
+# 		controlBar.y = videoContainer.maxY
+# 	else
+# 		controlBar.y = videoContainer.maxY - controlBar.height
+# 	controlBar.x = videoContainer.width/2.0 - controlBar.width/2.0
+# 
 # helper function for figuring out if a scene choose button is being pressed
 sceneChooseButtonChecker = (xCoord, yCoord) ->
 	
@@ -188,11 +241,14 @@ sceneChooseButtonChecker = (xCoord, yCoord) ->
 
 # Function to handle forward scene choice
 forwardScene.on Events.Tap, (event) ->
-	
+	print "tapped"
 	xCoord = event.point.x
 	yCoord = event.point.y
 	currTime = videoLayer.player.currentTime
-	#print event.point
+	print "point: ", event.point
+	#print "client: ", event.clientX, event.clientY
+	#print "page: ", event.pageX, event.pageY
+	#print "screen: ", event.screenX, event.screenY
 	#print videoLayer.player.currentTime
 	# if a click occurs while buttons are active during scene, check if a button was clicked
 	if true in [Math.round(currTime) in  [Math.round(choiceStarts[x])... Math.round(sceneStarts[x+1])+1] for x in [0...sceneStarts.length-1]][0]
