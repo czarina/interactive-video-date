@@ -5,6 +5,7 @@ history = [0]
 # timestamps of scene starts in seconds
 sceneStarts = [0, 33.6, 58.4, 100.6, 139.2, 187.6, 220.9, 248]
 
+print Utils.isDesktop(), Utils.isMobile()
 endScenes = [2, 5, 6]
 endScenePauseSegments = [[99, 100.6], [219.5, 220.9], [246.3, 248]]
 # scene descriptions 
