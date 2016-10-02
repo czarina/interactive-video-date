@@ -1,5 +1,5 @@
 # grab videoId (based on the url)
-videoId = _(window.location.href).split('/').compact().last()
+#videoId = _(window.location.href).split('/').compact().last()
 
 # generate sessionId (based on time in ms + random number)
 sessionId = Date.now() + '-' + Utils.randomNumber(0, 1000)
@@ -14,14 +14,19 @@ trackEvent = (event, opts) ->
 	if !_.startsWith(window.location.host, '127.0.0.1')
 		mixpanel.track(event, _.extend(opts,
 			sessionId: sessionId,
-			videoId: videoId,
-			timestamp: Date.now()
+			timestamp: Date.now(),
+			videoId: 'dating'
 		))
 
 trackEvent 'loaded page'
 
-window.addEventListener "beforeunload", ->
-	trackEvent 'closed page'
+# log close page event
+window.onbeforeunload = () ->
+	trackEvent('closed page',
+		currVideoTimestamp: videoLayer.player.currentTime,
+		currScene: history[history.length - 1]
+	)
+	undefined
 # stack of scene indices
 # 16x9 is the standard aspect ratio 
 history = [0]
@@ -38,8 +43,11 @@ endScenePauseSegments = [[99, 100.6], [219.5, 220.9], [246.3, 248]]
 choiceStarts = [22.1, 48.5, 90.3, 129.6, 175.3, 214.5, 242.2]
 
 # choice button coords [button left: [[xMin, xMax], [yMin, yMax]], button right: ...]
-normalChooseCoords = [[[80, 550], [200, 475]], [[950, 1250], [200, 475]]]
-tallChooseCoords = [[[75, 375], [250, 440]], [[930,1250], [250, 440]]]
+#normalChooseCoords = [[[80, 550], [200, 475]], [[950, 1250], [200, 475]]]
+#tallChooseCoords = [[[75, 375], [250, 440]], [[930,1250], [250, 440]]]
+
+normalChooseCoords = [[[0.061, 0.417],[0.267, 0.633]], [[0.72, 0.947], [0.267, 0.633]]]tallChooseCoords = [[[0.057, 0.284], [0.333, 0.587]], [[0.705, 0.947],[0.333, 0.587]]] 
+
 goToBeginningChooseCords = [[[100, 500], [250, 450]], [[-1, -1], [-1, -1]]]
 
 # which scene links to which scene 

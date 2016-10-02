@@ -1,5 +1,5 @@
 # grab videoId (based on the url)
-videoId = _(window.location.href).split('/').compact().last()
+#videoId = _(window.location.href).split('/').compact().last()
 
 # generate sessionId (based on time in ms + random number)
 sessionId = Date.now() + '-' + Utils.randomNumber(0, 1000)
@@ -14,12 +14,19 @@ trackEvent = (event, opts) ->
 	if !_.startsWith(window.location.host, '127.0.0.1')
 		mixpanel.track(event, _.extend(opts,
 			sessionId: sessionId,
-			videoId: videoId,
-			timestamp: Date.now()
+			timestamp: Date.now(),
+			videoId: 'dating'
 		))
 
 trackEvent 'loaded page'
 
+# log close page event
+window.onbeforeunload = () ->
+	trackEvent('closed page',
+		currVideoTimestamp: videoLayer.player.currentTime,
+		currScene: history[history.length - 1]
+	)
+	undefined
 # stack of scene indices
 # 16x9 is the standard aspect ratio 
 history = [0]
@@ -36,23 +43,32 @@ endScenePauseSegments = [[99, 100.6], [219.5, 220.9], [246.3, 248]]
 choiceStarts = [22.1, 48.5, 90.3, 129.6, 175.3, 214.5, 242.2]
 
 # choice button coords [button left: [[xMin, xMax], [yMin, yMax]], button right: ...]
-normalChooseCoords = [[[80, 550], [200, 475]], [[950, 1250], [200, 475]]]
-tallChooseCoords = [[[75, 375], [250, 440]], [[930,1250], [250, 440]]]
-goToBeginningChooseCords = [[[100, 500], [250, 450]], [[-1, -1], [-1, -1]]]
+#normalChooseCoords = [[[80, 550], [200, 475]], [[950, 1250], [200, 475]]]
+#tallChooseCoords = [[[75, 375], [250, 440]], [[930,1250], [250, 440]]]
+#goToBeginningChooseCords = [[[100, 500], [250, 450]], [[-1, -1], [-1, -1]]]
+
+normalChooseCoords = [[[0.061,0.417],[0.267,0.633]], [[0.72, 0.947],[0.267,0.633]]]
+tallChooseCoords = [[[0.057, 0.284], [0.333, 0.587]], [[0.705, 0.947],[0.333, 0.587]]]
+goToBeginningChooseCoords = [[[0.076, 0.379], [0.333, 0.6]], [[-1, -1], [-1, -1]]]
 
 # which scene links to which scene 
 # [[0's left scene #, 0's right scene #], [1's left scene #, 1's right scene #],....]
 sceneLinks = [[1, 3], [2, 4], [0, 0], [5, 6], [5, 6], [0, 0], [0, 0]]
 
+normalizeCoords = (xCoord, yCoord) =>
+	xCoordNormalized = (xCoord - videoLayer.minX) / videoLayer.width
+	yCoordNormalized = (yCoord - videoLayer.minY) / videoLayer.height
+	[xCoordNormalized, yCoordNormalized]
+	
 # choose button coords for all scenes
 chooseCoords = [
 	normalChooseCoords,
 	tallChooseCoords,
-	goToBeginningChooseCords,
+	goToBeginningChooseCoords,
 	normalChooseCoords,
 	normalChooseCoords,
-	goToBeginningChooseCords,
-	goToBeginningChooseCords
+	goToBeginningChooseCoords,
+	goToBeginningChooseCoords
 ]
 
 # setup a container to hold everything
@@ -210,11 +226,11 @@ else
 # resize layers appropriately every time there's an orientation change
 updateOrientation = (includeThumbnail) ->
 	if Screen.width / Screen.height > (16.0/9.0)
-		print "height limited"
+		#print "height limited"
 		width = (16.0/9.0) * Screen.height
 		height = Screen.height
 	else
-		print "width limited"
+		#print "width limited"
 		width = Screen.width
 		height = (9.0/16.0)*Screen.width
 	videoContainer.width = Screen.width
@@ -230,7 +246,7 @@ updateOrientation = (includeThumbnail) ->
 	forwardScene.center()
 	if controlBar.height + videoLayer.maxY < Screen.height
 		controlBar.y = videoLayer.maxY
-		print "put underneath"
+		#print "put underneath"
 		controlBar.bringToFront()
 	else
 		controlBar.y = videoLayer.maxY - controlBar.height
@@ -240,13 +256,13 @@ updateOrientation = (includeThumbnail) ->
 	vidMaxX = videoLayer.maxX
 	vidMinY = videoLayer.minY
 	vidMaxY = videoLayer.maxY
-	print vidMinX, vidMaxX, vidMinY, vidMaxY
+	#print vidMinX, vidMaxX, vidMinY, vidMaxY
 # 
 #set sizing properly
 updateOrientation(true)
 
 # helper function for figuring out if a scene choose button is being pressed
-sceneChooseButtonChecker = (xCoord, yCoord) ->
+sceneChooseButtonChecker = (xCoord, yCoord, currTime) ->
 	
 	#print "checking for choice"
 	currScene = history[history.length - 1]
@@ -259,6 +275,7 @@ sceneChooseButtonChecker = (xCoord, yCoord) ->
 	chooseRightX = chooseRight[0]
 	chooseRightY = chooseRight[1]
 	
+	[xCoord, yCoord] = normalizeCoords(xCoord, yCoord)
 	pressedButton = false
 	# logic for left button choice
 	if xCoord >= chooseLeftX[0] and xCoord <= chooseLeftX[1] and yCoord >= chooseLeftY[0] and yCoord <= chooseLeftY[1]
@@ -278,28 +295,32 @@ sceneChooseButtonChecker = (xCoord, yCoord) ->
 		history.push(nextScene)
 		videoLayer.player.play()
 		playButton.image = "images/pause.png"
-		
+		trackEvent('forward scene',
+			currVideoTimestamp: currTime,
+			currScene: history[history.length - 2],
+			nextVideoTimestamp: videoLayer.player.currentTime,
+			nextScene: history[history.length - 1]
+		)
 
 # Function to handle forward scene choice
 forwardScene.on Events.Tap, (event) ->
-	print "tapped"
+	#print "tapped"
 	xCoord = event.point.x
 	yCoord = event.point.y
 	currTime = videoLayer.player.currentTime
-	print "point: ", event.point
+	#print "point: ", event.point
 	#print "client: ", event.clientX, event.clientY
 	#print "page: ", event.pageX, event.pageY
 	#print "screen: ", event.screenX, event.screenY
 	#print videoLayer.player.currentTime
 	# if a click occurs while buttons are active during scene, check if a button was clicked
 	if true in [Math.round(currTime) in  [Math.round(choiceStarts[x])... Math.round(sceneStarts[x+1])+1] for x in [0...sceneStarts.length-1]][0]
-		sceneChooseButtonChecker(xCoord, yCoord)
+		sceneChooseButtonChecker(xCoord, yCoord, currTime)
 
 # Function to handle back button
 backButton.on Events.Click, ->
-	trackEvent('hit back',
-		sceneIdx: _.last(history)
-	)
+	startTime = videoLayer.player.currentTime
+	startScene = history[history.length - 1]
 	history.pop()
 	if (history.length == 0)
 		history.push(0)
@@ -309,7 +330,12 @@ backButton.on Events.Click, ->
 		videoLayer.player.currentTime = 0
 	else
 		videoLayer.player.currentTime = choiceStarts[history[history.length - 1]]
-
+	trackEvent('back scene',
+		currVideoTimestamp: startTime,
+		currScene: startScene,
+		nextVideoTimestamp: videoLayer.player.currentTime,
+		nextScene: history[history.length - 1]
+	)
 	videoLayer.player.play()
 
 	# simple bounce effect on click
@@ -322,13 +348,15 @@ backButton.on Events.Click, ->
 
 # Function to handle choose button
 skipToChoiceButton.on Events.Click, ->
-	trackEvent('skip to choice',
-		sceneIdx: _.last(history)
-	)
 	currScene = history[history.length - 1]
-	#print choiceStarts[currScene]
-	
-	videoLayer.player.currentTime = choiceStarts[currScene]
+	nextTime = choiceStarts[currScene]
+	trackEvent('skip to choice',
+		currVideoTimestamp: videoLayer.player.currentTime,
+		currScene: currScene,
+		nextVideoTimestamp: nextTime,
+		nextScene: currScene
+	)
+	videoLayer.player.currentTime = nextTime
 	videoLayer.player.play()
 	#videoLayer.player.fastSeek(choiceStarts[currScene])
 
@@ -343,7 +371,10 @@ skipToChoiceButton.on Events.Click, ->
 # Function to handle home button
 homeButton.on Events.Click, ->
 	trackEvent('hit home',
-		sceneIdx: _.last(history)
+		currVideoTimestamp: videoLayer.player.currentTime,
+		currScene: history[history.length - 1],
+		nextVideoTimestamp: 0,
+		nextScene: 0
 	)
 	videoLayer.player.currentTime = 0
 	videoLayer.player.play()

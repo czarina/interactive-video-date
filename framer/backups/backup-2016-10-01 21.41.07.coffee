@@ -14,13 +14,19 @@ trackEvent = (event, opts) ->
 	if !_.startsWith(window.location.host, '127.0.0.1')
 		mixpanel.track(event, _.extend(opts,
 			sessionId: sessionId,
-			timestamp: Date.now()
+			timestamp: Date.now(),
+			videoId: 'dating'
 		))
 
 trackEvent 'loaded page'
 
-window.onBeforeUnload = () ->
-	trackEvent 'closed page'
+# log close page event
+window.onbeforeunload = () ->
+	trackEvent('closed page',
+		currVideoTimestamp: videoLayer.player.currentTime,
+		currScene: history[history.length - 1]
+	)
+	undefined
 # stack of scene indices
 # 16x9 is the standard aspect ratio 
 history = [0]
@@ -37,23 +43,32 @@ endScenePauseSegments = [[99, 100.6], [219.5, 220.9], [246.3, 248]]
 choiceStarts = [22.1, 48.5, 90.3, 129.6, 175.3, 214.5, 242.2]
 
 # choice button coords [button left: [[xMin, xMax], [yMin, yMax]], button right: ...]
-normalChooseCoords = [[[80, 550], [200, 475]], [[950, 1250], [200, 475]]]
-tallChooseCoords = [[[75, 375], [250, 440]], [[930,1250], [250, 440]]]
-goToBeginningChooseCords = [[[100, 500], [250, 450]], [[-1, -1], [-1, -1]]]
+#normalChooseCoords = [[[80, 550], [200, 475]], [[950, 1250], [200, 475]]]
+#tallChooseCoords = [[[75, 375], [250, 440]], [[930,1250], [250, 440]]]
+#goToBeginningChooseCords = [[[100, 500], [250, 450]], [[-1, -1], [-1, -1]]]
+
+normalChooseCoords = [[[0.061,0.417],[0.267,0.633]], [[0.72, 0.947],[0.267,0.633]]]
+tallChooseCoords = [[[0.057, 0.284], [0.333, 0.587]], [[0.705, 0.947],[0.333, 0.587]]]
+goToBeginningChooseCoords = [[[0.076, 0.379], [0.333, 0.6]], [[-1, -1], [-1, -1]]]
 
 # which scene links to which scene 
 # [[0's left scene #, 0's right scene #], [1's left scene #, 1's right scene #],....]
 sceneLinks = [[1, 3], [2, 4], [0, 0], [5, 6], [5, 6], [0, 0], [0, 0]]
 
+normalizeCoords = (xCoord, yCoord) =>
+	xCoordNormalized = (xCoord - videoLayer.minX) / videoLayer.width
+	yCoordNormalized = (yCoord - videoLayer.minY) / videoLayer.height
+	[xCoordNormalized, yCoordNormalized]
+	
 # choose button coords for all scenes
 chooseCoords = [
 	normalChooseCoords,
 	tallChooseCoords,
-	goToBeginningChooseCords,
+	goToBeginningChooseCoords,
 	normalChooseCoords,
 	normalChooseCoords,
-	goToBeginningChooseCords,
-	goToBeginningChooseCords
+	goToBeginningChooseCoords,
+	goToBeginningChooseCoords
 ]
 
 # setup a container to hold everything
@@ -260,6 +275,7 @@ sceneChooseButtonChecker = (xCoord, yCoord, currTime) ->
 	chooseRightX = chooseRight[0]
 	chooseRightY = chooseRight[1]
 	
+	xCoord, yCoord = normalizeCoords(xCoord, yCoord)
 	pressedButton = false
 	# logic for left button choice
 	if xCoord >= chooseLeftX[0] and xCoord <= chooseLeftX[1] and yCoord >= chooseLeftY[0] and yCoord <= chooseLeftY[1]
