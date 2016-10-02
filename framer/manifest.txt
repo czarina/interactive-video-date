@@ -17,13 +17,19 @@
 .git/logs/refs/heads/master
 .git/logs/refs/remotes/origin/HEAD
 .git/logs/refs/remotes/origin/master
+.git/objects/01/ac6e419ad75ade3e90bac8e6c230222a995a6b
+.git/objects/02/1884ec63ff6b113d5e9a10a14cc20e128c140e
 .git/objects/06/8e5f13746ee41eab3433620dee051a6ef626bf
 .git/objects/08/808758671a4a82ea2a87b2e6ae306799ea3d4c
 .git/objects/0b/1b12d633d6806db4ba28508b75f45cd319ddf0
+.git/objects/0e/83a293438e5d75bfe504c22e7e175717eb0696
 .git/objects/11/6312ec91454f20a9609832cfbfb17b17786390
 .git/objects/16/a389c8c8c86fc6c4206f9737c05a4e7f42c5ec
 .git/objects/16/a6ca61cf3170bfdf3624639ef2f29f8d8a30cc
+.git/objects/1b/695529cb687ed985cc12792581611b11dd94d2
 .git/objects/1f/05988615b9efe4b44894e0b73f462dc579cd4f
+.git/objects/20/c022f2acb05df928ee437813a681bfaa64a633
+.git/objects/23/089282aeb526080103ba677a5112bc06414099
 .git/objects/23/e0d6b9034842419035f0fa92f55105ce9bbab3
 .git/objects/24/6533e7fc8c494a8a1ae36b5fe5c4a0d6901a2b
 .git/objects/24/b717378145e489d0f1b24b82b17f0f1e074e03
@@ -33,16 +39,24 @@
 .git/objects/26/6bd7a9ada16e983c70b9a33bfb3f0879066e8a
 .git/objects/2a/e0a4f4997885b684387a7c426005e2d502bdaf
 .git/objects/2e/77f3f583492f48f9c2a9660fef7b64e6e2330f
+.git/objects/2e/b433c8105b6dab948055189306081fc9896434
+.git/objects/31/55e9986473e3ca6d88229e49dd67cdefcc6ca3
 .git/objects/31/9d490c3ec4c37ff21423c4baf0b1660a7f0ff2
 .git/objects/38/58121dc29b439632334e747d4a3c573ad3daf8
+.git/objects/3b/d344f08721de279748fede297762017553990a
 .git/objects/3d/e4d2f5f763af7bf8b06a04ae4a1bed9281a012
 .git/objects/3e/b9dd5d32b505df631fe965750d9d0d35822b41
 .git/objects/40/bb3d094129c9edb3fc8dcd260520ef3c1dc4b5
+.git/objects/46/b2da2ef48b35bbd307a14351306b2020c24b19
+.git/objects/47/3885cb7160df16312469ce407a5bf0ee8c39e5
 .git/objects/49/59ad691c8258d07765c5f537cb0dbc0dd512a6
+.git/objects/4a/11115b3e1557b3e55b82cef712a62785e80072
+.git/objects/4a/766a71b7f1f394ae616fa5c70c714dba4f0e38
 .git/objects/4b/52b4f425c6e327c70e41bca3d11c2c3dcebfd6
 .git/objects/4c/e6aeefef5fb2ae1f5dc9e0bb8ac7a28a0add12
 .git/objects/4f/06c940ff9f6dc8bf242cd83e967248590d8ba4
 .git/objects/4f/4b3ab20ca9f6cb37390e1ec49ef357f0fc0c49
+.git/objects/50/121a65d72149b69db510cecab67c3df631f018
 .git/objects/52/713c4ffe6c93a6300b2f23cca4819f5ea8686a
 .git/objects/52/8c551ad3ae14097c15b858ab80bb3cb4b94264
 .git/objects/56/0f5a82da140530f07931a2a9c1321d24a760b2
@@ -53,6 +67,7 @@
 .git/objects/5a/056e8e6c75be06583d10b760ff8229add34cf2
 .git/objects/5c/7f9b8e9f6045eb31adf2a921d582b8bcbf2bdc
 .git/objects/5d/8f6d1b928a0aff4d9ac1cf84910e92815a7214
+.git/objects/62/57e44a6b0af1c26ab886a8a29990f321ddd659
 .git/objects/62/f363c66e66a932a7275a3484c288503cdc3cd5
 .git/objects/67/f7fabdaa067033f6a8e2be5d459e73ba517b57
 .git/objects/68/dfc2587e93605010ad1169f881e92f176cc0bb
@@ -73,10 +88,13 @@
 .git/objects/77/f4b90a731ffa18009f0dd3f7da6f7f29ee4896
 .git/objects/79/64b2ce1fe07d6413eb1bbffea2f8557a1c7cea
 .git/objects/7a/9de2b80446eb963fd0ed8f951eb458d6ba8cff
+.git/objects/7d/5bb0b60a4b808396dc3716c719183ace7ec447
 .git/objects/7d/d40b75fb5fc70e5f79bd85faf7baea1c445611
+.git/objects/7e/f3adc666e89006cebbff933c0fb1805b8d076e
 .git/objects/80/e89049252903a5038393dd07aa3726c8838a0e
 .git/objects/85/e048a1e0aba27e02685e780072acd11728c5ab
 .git/objects/89/b4d563f8a269bf25ba7687dfaedcea4bea3786
+.git/objects/8c/6c92228fbd89b36b63261a336bbc3e135a90ba
 .git/objects/8d/61d6a3f77bcae24c076442b498d822c8421cfb
 .git/objects/8e/4dbe95918fe26467de0e4b59b091e01a689e6e
 .git/objects/91/b3f80c488fa5e9873b7efb438ff8a79ee34c95
@@ -85,26 +103,37 @@
 .git/objects/94/d0d33d6402d8f16acb854e2500ec4b9844bcb6
 .git/objects/95/b2aa989a67dbfd0134f84ff41e6d97d2ee7726
 .git/objects/98/8e6df3b12080d821bfd104c6d9defec8c66355
+.git/objects/9a/3ca19966983a981458f52ba6ac439dfdc059d0
+.git/objects/9f/708376acf0c3ad22d4ac510dfe6d8229238bc8
 .git/objects/a0/97b26abe82e7e37f4847e61a0352bbb8a0bfdf
+.git/objects/a1/91397af14d799cdd330a59531ce4b4d142d2b8
 .git/objects/a1/e117480a4277cda590c0973912b911508d5686
 .git/objects/a2/3e1a5f04a3dc66f792f36930f8878745e8f203
+.git/objects/a6/523de039fff94b351f0946650db86eb6c414c1
 .git/objects/a9/a7760b899547738d007ca22b164342060dc59f
+.git/objects/aa/8efedc2c7637c15cd0397c749d5e921cbe33db
 .git/objects/ab/4d1225246f2cf3820fff7d4d487a5985523abf
 .git/objects/ab/61deb794112ce939cacf8cf01812b5994d787e
+.git/objects/ab/b683cc1d7357a9a9e6ddbcd0b33f90786fddd0
+.git/objects/ac/0a72df44f5c28772dd2f25cc7cd3514d78ecab
 .git/objects/ac/59fa90b1842af061858ed49137a4ab74738ec1
 .git/objects/b1/3709c3f965bf78c806cf380975a675b446c2e1
 .git/objects/b1/ac1d4ca05ec45df324337cfad8fd06e7f993aa
 .git/objects/b5/eefa57859dde7047d96dfdf33c8a024f896d18
+.git/objects/b9/01f79cea073efa757b06493de1f3399814098b
 .git/objects/b9/798fa5e5872f53121121a8fe047c397ac5d78c
 .git/objects/be/aebea9dbd08e6453359235d7b4725223221363
 .git/objects/bf/1537a6d5958d41c7a2848abc0598fb32345a97
 .git/objects/c2/66a2c74de48a7658f9e8307aed46cee73e1424
 .git/objects/c2/f8ec78cd5e058bde619fc557f1664e024e48ed
+.git/objects/c4/ef84d36ab5c26bc9d456c0b8166bd7978e06b3
 .git/objects/c7/c9440fe9a4db73d3f6279c0be7cd27f60f8baf
 .git/objects/c8/ec84b9b640874673dc51fd7fedd17f93044b62
 .git/objects/ca/dacf4fe25063c8e18ab54f13bcca9e3bb92adf
 .git/objects/cc/41310cc0a0becfdf52fa2503f0cf87483b8404
 .git/objects/cd/1bf463f6f918c27ce43a5f736b37e531cc8e09
+.git/objects/ce/3cd562f65d9ab5f36e5b88ea5dc0fa4b8cd2fa
+.git/objects/cf/20574524827d6dfbcd9a746b07dc00d26c2a2b
 .git/objects/d2/3143873cb3676c1c38f5658c4784d9fc7b75db
 .git/objects/d8/89f16cd3caea8a6936551d52d307bee7998f50
 .git/objects/d9/df5343a712cf02d0b399a60e5edf27cf7bc169
@@ -114,6 +143,7 @@
 .git/objects/e8/3ef4d444135706d6b821e49094e44e6cc2bf30
 .git/objects/e9/ffa4a9c5c91f8d3e29042006424aab2ce6a08c
 .git/objects/eb/f17634f8a9005776766444472037c1224e6ba3
+.git/objects/f2/5249cd2bd7ec81b2932a5c856475154141436e
 .git/objects/f6/b0ce603b5d6c356e9a41bc1d07d4ac5d77d7d3
 .git/objects/f7/2f7357a29e513b5dbbd72b2b9b2f5e3f9299d6
 .git/objects/fa/09861c40649ea5824ef925b57c92793ec5f8e8
@@ -129,27 +159,27 @@
 .git/refs/remotes/origin/HEAD
 .git/refs/remotes/origin/master
 app.coffee
-framer/backups/backup-2016-10-01 20.38.07.coffee
-framer/backups/backup-2016-10-01 21.33.07.coffee
-framer/backups/backup-2016-10-01 21.34.07.coffee
-framer/backups/backup-2016-10-01 21.35.07.coffee
-framer/backups/backup-2016-10-01 21.36.07.coffee
-framer/backups/backup-2016-10-01 21.37.07.coffee
-framer/backups/backup-2016-10-01 21.38.07.coffee
-framer/backups/backup-2016-10-01 21.39.07.coffee
-framer/backups/backup-2016-10-01 21.40.07.coffee
-framer/backups/backup-2016-10-01 21.41.07.coffee
-framer/backups/backup-2016-10-01 21.42.07.coffee
-framer/backups/backup-2016-10-01 21.45.07.coffee
-framer/backups/backup-2016-10-01 21.46.07.coffee
-framer/backups/backup-2016-10-01 22.01.07.coffee
-framer/backups/backup-2016-10-01 22.03.07.coffee
-framer/backups/backup-2016-10-01 22.06.07.coffee
-framer/backups/backup-2016-10-01 22.07.07.coffee
-framer/backups/backup-2016-10-01 22.08.07.coffee
-framer/backups/backup-2016-10-01 22.11.07.coffee
-framer/backups/backup-2016-10-01 22.12.07.coffee
-framer/backups/backup-2016-10-01 22.13.07.coffee
+framer/backups/backup-2016-10-01 22.55.07.coffee
+framer/backups/backup-2016-10-01 22.56.07.coffee
+framer/backups/backup-2016-10-01 22.57.07.coffee
+framer/backups/backup-2016-10-01 22.58.07.coffee
+framer/backups/backup-2016-10-01 22.59.07.coffee
+framer/backups/backup-2016-10-01 23.00.07.coffee
+framer/backups/backup-2016-10-01 23.01.07.coffee
+framer/backups/backup-2016-10-01 23.02.07.coffee
+framer/backups/backup-2016-10-01 23.03.07.coffee
+framer/backups/backup-2016-10-01 23.04.07.coffee
+framer/backups/backup-2016-10-01 23.05.07.coffee
+framer/backups/backup-2016-10-01 23.06.07.coffee
+framer/backups/backup-2016-10-01 23.07.07.coffee
+framer/backups/backup-2016-10-01 23.08.07.coffee
+framer/backups/backup-2016-10-01 23.09.07.coffee
+framer/backups/backup-2016-10-01 23.11.07.coffee
+framer/backups/backup-2016-10-01 23.12.07.coffee
+framer/backups/backup-2016-10-01 23.14.07.coffee
+framer/backups/backup-2016-10-01 23.15.07.coffee
+framer/backups/backup-2016-10-01 23.16.07.coffee
+framer/backups/backup-2016-10-01 23.17.07.coffee
 framer/coffee-script.js
 framer/config.json
 framer/framer.generated.js

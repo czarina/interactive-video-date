@@ -1,12 +1,22 @@
-# grab videoId (based on the url)
-#videoId = _(window.location.href).split('/').compact().last()
-
+## TRACKING LOGIC 
 # generate sessionId (based on time in ms + random number)
 sessionId = Date.now() + '-' + Utils.randomNumber(0, 1000)
 
-# stack of scene indices
-# 16x9 is the standard aspect ratio
-history = [0]
+# track buffering events
+lastTime = 0.0
+lastPlaying = false
+window.setInterval( ->
+	currPlaying = !videoLayer.player.paused
+	currTime = videoLayer.player.currentTime
+	#if has been playing for 750ms without any advancement in TS => buffer event
+	if lastPlaying and currPlaying and currTime == lastTime
+		trackEvent('buffering',
+			currVideoTimestamp: currTime,
+			currScene: history[history.length - 1]
+		)
+	lastPlaying = currPlaying
+	lastTime = currTime
+, 750)
 
 # generic track event function for mixpanel
 trackEvent = (event, opts) ->
@@ -20,15 +30,15 @@ trackEvent = (event, opts) ->
 
 trackEvent 'loaded page'
 
-# log close page event
+# track close page events
 window.onbeforeunload = () ->
 	trackEvent('closed page',
 		currVideoTimestamp: videoLayer.player.currentTime,
 		currScene: history[history.length - 1]
 	)
 	undefined
+	
 # stack of scene indices
-# 16x9 is the standard aspect ratio 
 history = [0]
 
 # timestamps of scene starts in seconds
@@ -36,17 +46,11 @@ sceneStarts = [0, 33.6, 58.4, 100.6, 139.2, 187.6, 220.9, 248]
 
 endScenes = [2, 5, 6]
 endScenePauseSegments = [[99, 100.6], [219.5, 220.9], [246.3, 248]]
-# scene descriptions 
-# [go on date?, yes, pay half, no don't pay - go to park?,yes to park, no to park]
 
 # timestamp of choice starts in seconds
 choiceStarts = [22.1, 48.5, 90.3, 129.6, 175.3, 214.5, 242.2]
 
-# choice button coords [button left: [[xMin, xMax], [yMin, yMax]], button right: ...]
-#normalChooseCoords = [[[80, 550], [200, 475]], [[950, 1250], [200, 475]]]
-#tallChooseCoords = [[[75, 375], [250, 440]], [[930,1250], [250, 440]]]
-#goToBeginningChooseCords = [[[100, 500], [250, 450]], [[-1, -1], [-1, -1]]]
-
+# choice coordinate definitions
 normalChooseCoords = [[[0.061,0.417],[0.267,0.633]], [[0.72, 0.947],[0.267,0.633]]]
 tallChooseCoords = [[[0.057, 0.284], [0.333, 0.587]], [[0.705, 0.947],[0.333, 0.587]]]
 goToBeginningChooseCoords = [[[0.076, 0.379], [0.333, 0.6]], [[-1, -1], [-1, -1]]]
@@ -55,6 +59,7 @@ goToBeginningChooseCoords = [[[0.076, 0.379], [0.333, 0.6]], [[-1, -1], [-1, -1]
 # [[0's left scene #, 0's right scene #], [1's left scene #, 1's right scene #],....]
 sceneLinks = [[1, 3], [2, 4], [0, 0], [5, 6], [5, 6], [0, 0], [0, 0]]
 
+# normalize screen coordinates 
 normalizeCoords = (xCoord, yCoord) =>
 	xCoordNormalized = (xCoord - videoLayer.minX) / videoLayer.width
 	yCoordNormalized = (yCoord - videoLayer.minY) / videoLayer.height
@@ -88,6 +93,7 @@ videoLayer = new VideoLayer
 	video: "images/dating_edited.mp4"
 	superLayer: videoContainer
 
+# create a thumbnail layer to fill the shared thumbnail
 thumbnailLayer = new Layer
 	x: 0
 	y: 0
@@ -214,14 +220,20 @@ playButton.on Events.Click, ->
 		curve: 'spring(900,30,0)'
 		
 #Check whether the device is mobile or not (versus Framer)
+
+
 if Utils.isMobile()
 	# Add event listener on orientation change
 	window.addEventListener "orientationchange", -> 
-		updateOrientation(thumbnailLayer.opacity>0.0)
+		window.setTimeout( -> 
+			updateOrientation(thumbnailLayer.opacity>0.0)
+		, 200)
 else
 	# Listen for orientation changes on the device view
 	Framer.Device.on "change:orientation", ->
-		updateOrientation(thumbnailLayer.opacity>0.0)
+		window.setTimeout( ->
+			updateOrientation(thumbnailLayer.opacity>0.0)
+		, 200)
 
 # resize layers appropriately every time there's an orientation change
 updateOrientation = (includeThumbnail) ->
@@ -256,7 +268,6 @@ updateOrientation = (includeThumbnail) ->
 	vidMaxX = videoLayer.maxX
 	vidMinY = videoLayer.minY
 	vidMaxY = videoLayer.maxY
-	#print vidMinX, vidMaxX, vidMinY, vidMaxY
 # 
 #set sizing properly
 updateOrientation(true)

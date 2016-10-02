@@ -1,12 +1,22 @@
-# grab videoId (based on the url)
-#videoId = _(window.location.href).split('/').compact().last()
-
+## TRACKING LOGIC 
 # generate sessionId (based on time in ms + random number)
 sessionId = Date.now() + '-' + Utils.randomNumber(0, 1000)
 
-# stack of scene indices
-# 16x9 is the standard aspect ratio
-history = [0]
+# track buffering events
+lastTime = 0.0
+lastPlaying = false
+window.setInterval( ->
+	currPlaying = !videoLayer.player.paused
+	currTime = videoLayer.player.currentTime
+	#if has been playing for 750ms without any advancement in TS => buffer event
+	if lastPlaying and currPlaying and currTime == lastTime
+		trackEvent('buffering',
+			currVideoTimestamp: currTime,
+			currScene: history[history.length - 1]
+		)
+	lastPlaying = currPlaying
+	lastTime = currTime
+, 750)
 
 # generic track event function for mixpanel
 trackEvent = (event, opts) ->
@@ -20,15 +30,15 @@ trackEvent = (event, opts) ->
 
 trackEvent 'loaded page'
 
-# log close page event
+# track close page events
 window.onbeforeunload = () ->
 	trackEvent('closed page',
 		currVideoTimestamp: videoLayer.player.currentTime,
 		currScene: history[history.length - 1]
 	)
 	undefined
+	
 # stack of scene indices
-# 16x9 is the standard aspect ratio 
 history = [0]
 
 # timestamps of scene starts in seconds
@@ -36,33 +46,34 @@ sceneStarts = [0, 33.6, 58.4, 100.6, 139.2, 187.6, 220.9, 248]
 
 endScenes = [2, 5, 6]
 endScenePauseSegments = [[99, 100.6], [219.5, 220.9], [246.3, 248]]
-# scene descriptions 
-# [go on date?, yes, pay half, no don't pay - go to park?,yes to park, no to park]
 
 # timestamp of choice starts in seconds
 choiceStarts = [22.1, 48.5, 90.3, 129.6, 175.3, 214.5, 242.2]
 
-# choice button coords [button left: [[xMin, xMax], [yMin, yMax]], button right: ...]
-normalChooseCoords = [[[80, 550], [200, 475]], [[950, 1250], [200, 475]]]
-tallChooseCoords = [[[75, 375], [250, 440]], [[930,1250], [250, 440]]]
-
-[0.061, 0.417],[0.267, 0.633], 		[0.72, 0.947], 		[0.267, 0.633], [0.057, 0.284], 		[0.333, 0.587], 		[0.705, 0.947], 		[0.333, 0.587], 
-
-goToBeginningChooseCords = [[[100, 500], [250, 450]], [[-1, -1], [-1, -1]]]
+# choice coordinate definitions
+normalChooseCoords = [[[0.061,0.417],[0.267,0.633]], [[0.72, 0.947],[0.267,0.633]]]
+tallChooseCoords = [[[0.057, 0.284], [0.333, 0.587]], [[0.705, 0.947],[0.333, 0.587]]]
+goToBeginningChooseCoords = [[[0.076, 0.379], [0.333, 0.6]], [[-1, -1], [-1, -1]]]
 
 # which scene links to which scene 
 # [[0's left scene #, 0's right scene #], [1's left scene #, 1's right scene #],....]
 sceneLinks = [[1, 3], [2, 4], [0, 0], [5, 6], [5, 6], [0, 0], [0, 0]]
 
+# normalize screen coordinates 
+normalizeCoords = (xCoord, yCoord) =>
+	xCoordNormalized = (xCoord - videoLayer.minX) / videoLayer.width
+	yCoordNormalized = (yCoord - videoLayer.minY) / videoLayer.height
+	[xCoordNormalized, yCoordNormalized]
+	
 # choose button coords for all scenes
 chooseCoords = [
 	normalChooseCoords,
 	tallChooseCoords,
-	goToBeginningChooseCords,
+	goToBeginningChooseCoords,
 	normalChooseCoords,
 	normalChooseCoords,
-	goToBeginningChooseCords,
-	goToBeginningChooseCords
+	goToBeginningChooseCoords,
+	goToBeginningChooseCoords
 ]
 
 # setup a container to hold everything
@@ -82,6 +93,9 @@ videoLayer = new VideoLayer
 	video: "images/dating_edited.mp4"
 	superLayer: videoContainer
 
+videoLayer.player.setAttribute('preload', 'auto')
+
+# create a thumbnail layer to fill the shared thumbnail
 thumbnailLayer = new Layer
 	x: 0
 	y: 0
@@ -90,33 +104,6 @@ thumbnailLayer = new Layer
 	image: "images/thumbnail.png"
 	superLayer: videoLayer
 
-# show load times
-videoLayer.player.setAttribute('preload', 'auto')
-#window.setInterval( -> 
-#	print videoLayer.player.buffered.start(0)
-#	print videoLayer.player.buffered.end(0)
-#, 1000)
-
-# when the video is clicked
-# videoLayer.on Events.Click, ->
-# 	check if the player is paused
-# 	if videoLayer.player.paused == true
-# 		if true call the play method on the video layer
-# 		videoLayer.player.play()
-# 		playButton.image = 'images/pause.png'
-# 	else
-# 		else pause the video
-# 		videoLayer.player.pause()
-# 		playButton.image = 'images/play.png'
-# 
-# 	simple bounce effect on click
-# 	playButton.scale = 1.15
-# 	playButton.animate
-# 		properties:
-# 			scale:1
-# 		time:0.1
-# 		curve:'spring(900,30,0)'
-	
 # control bar to hold buttons and timeline
 controlBar = new Layer
 	width:400
@@ -177,13 +164,15 @@ forwardScene = new Layer
 	superLayer: videoContainer
 	backgroundColor: ""
 
+# Thumbnail in front until an action is taken 
 thumbnailLayer.bringToFront()
 controlBar.bringToFront()
 controlBar.on Events.Click, ->
 	thumbnailLayer.opacity = 0.0
 
-# Function to handle play/pause button
-playButton.on Events.Click, ->
+# play/pause function
+switchPlay = () ->
+	thumbnailLayer.opacity = 0.0
 	if videoLayer.player.paused == true
 		trackEvent('play',
 			currVideoTimestamp: videoLayer.player.currentTime,
@@ -198,7 +187,10 @@ playButton.on Events.Click, ->
 		)
 		videoLayer.player.pause()
 		playButton.image = "images/play.png"
-
+		
+# Function to handle play/pause button
+playButton.on Events.Click, ->
+	switchPlay()
 	# simple bounce effect on click
 	playButton.scale = 1.15
 	playButton.animate
@@ -207,24 +199,28 @@ playButton.on Events.Click, ->
 		time: 0.1
 		curve: 'spring(900,30,0)'
 		
-#Check whether the device is mobile or not (versus Framer)
+# Check whether the device is mobile or not (versus Framer)
 if Utils.isMobile()
 	# Add event listener on orientation change
 	window.addEventListener "orientationchange", -> 
-		updateOrientation(thumbnailLayer.opacity>0.0)
+		window.setTimeout( -> 
+			updateOrientation(thumbnailLayer.opacity>0.0)
+		, 200)
 else
 	# Listen for orientation changes on the device view
 	Framer.Device.on "change:orientation", ->
-		updateOrientation(thumbnailLayer.opacity>0.0)
+		window.setTimeout( ->
+			updateOrientation(thumbnailLayer.opacity>0.0)
+		, 200)
 
-# resize layers appropriately every time there's an orientation change
+# Resize layers appropriately every time there's an orientation change
 updateOrientation = (includeThumbnail) ->
 	if Screen.width / Screen.height > (16.0/9.0)
-		print "height limited"
+		#print "height limited"
 		width = (16.0/9.0) * Screen.height
 		height = Screen.height
 	else
-		print "width limited"
+		#print "width limited"
 		width = Screen.width
 		height = (9.0/16.0)*Screen.width
 	videoContainer.width = Screen.width
@@ -240,19 +236,12 @@ updateOrientation = (includeThumbnail) ->
 	forwardScene.center()
 	if controlBar.height + videoLayer.maxY < Screen.height
 		controlBar.y = videoLayer.maxY
-		print "put underneath"
 		controlBar.bringToFront()
 	else
 		controlBar.y = videoLayer.maxY - controlBar.height
 	controlBar.x = videoContainer.width/2.0 - controlBar.width/2.0
-	
-	vidMinX = videoLayer.minX
-	vidMaxX = videoLayer.maxX
-	vidMinY = videoLayer.minY
-	vidMaxY = videoLayer.maxY
-	print vidMinX, vidMaxX, vidMinY, vidMaxY
-# 
-#set sizing properly
+
+#set sizing properly on initialization
 updateOrientation(true)
 
 # helper function for figuring out if a scene choose button is being pressed
@@ -269,19 +258,26 @@ sceneChooseButtonChecker = (xCoord, yCoord, currTime) ->
 	chooseRightX = chooseRight[0]
 	chooseRightY = chooseRight[1]
 	
+	[xCoord, yCoord] = normalizeCoords(xCoord, yCoord)
 	pressedButton = false
+	
 	# logic for left button choice
 	if xCoord >= chooseLeftX[0] and xCoord <= chooseLeftX[1] and yCoord >= chooseLeftY[0] and yCoord <= chooseLeftY[1]
 		#print "pressed left"
 		currScene = history[history.length - 1]
 		nextScene = sceneLinks[currScene][0]
 		pressedButton = true
+	
 	# logic for right button choice
 	else if xCoord >= chooseRightX[0] and xCoord <= chooseRightX[1] and yCoord >= chooseRightY[0] and yCoord <= chooseRightY[1]
 		#print "pressed right"
 		currScene = history[history.length - 1]
 		nextScene = sceneLinks[currScene][1]
 		pressedButton = true
+	
+	# if no button was pressed, count as a play/pause event	
+	else
+		switchPlay()
 		
 	if pressedButton
 		videoLayer.player.currentTime = sceneStarts[nextScene]
@@ -297,15 +293,10 @@ sceneChooseButtonChecker = (xCoord, yCoord, currTime) ->
 
 # Function to handle forward scene choice
 forwardScene.on Events.Tap, (event) ->
-	print "tapped"
 	xCoord = event.point.x
 	yCoord = event.point.y
 	currTime = videoLayer.player.currentTime
-	print "point: ", event.point
-	#print "client: ", event.clientX, event.clientY
-	#print "page: ", event.pageX, event.pageY
-	#print "screen: ", event.screenX, event.screenY
-	#print videoLayer.player.currentTime
+
 	# if a click occurs while buttons are active during scene, check if a button was clicked
 	if true in [Math.round(currTime) in  [Math.round(choiceStarts[x])... Math.round(sceneStarts[x+1])+1] for x in [0...sceneStarts.length-1]][0]
 		sceneChooseButtonChecker(xCoord, yCoord, currTime)
@@ -371,7 +362,6 @@ homeButton.on Events.Click, ->
 	)
 	videoLayer.player.currentTime = 0
 	videoLayer.player.play()
-	#videoLayer.player.fastSeek(0)
 
 	# simple bounce effect on click
 	homeButton.scale = 1.15
