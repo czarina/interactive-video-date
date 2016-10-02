@@ -195,11 +195,6 @@ switchPlay = () ->
 		playHelper()
 	else
 		pauseHelper()
-		
-# Enable pressing on thumbnail to trigger play/pause
-thumbnailLayer.on Events.Click, ->
-	print "clicked"
-	switchPlay()
 	
 # Function to handle play/pause button
 playButton.on Events.Click, ->
@@ -273,7 +268,7 @@ sceneChooseButtonChecker = (xCoord, yCoord, currTime) ->
 	
 	[xCoord, yCoord] = normalizeCoords(xCoord, yCoord)
 	pressedButton = false
-	
+
 	# logic for left button choice
 	if xCoord >= chooseLeftX[0] and xCoord <= chooseLeftX[1] and yCoord >= chooseLeftY[0] and yCoord <= chooseLeftY[1]
 		#print "pressed left"
@@ -305,17 +300,20 @@ sceneChooseButtonChecker = (xCoord, yCoord, currTime) ->
 		)
 
 # Function to handle forward scene choice
+# some phones have double tap issues. so dedupe them.
+# be careful - (0,0) is invalid, the next one is valid.
 forwardScene.on Events.Tap, (event) ->
 	xCoord = event.point.x
 	yCoord = event.point.y
 	currTime = videoLayer.player.currentTime
-
-	# if a click occurs while buttons are active during scene, check if a button was clicked
-	if true in [Math.round(currTime) in  [Math.round(choiceStarts[x])... Math.round(sceneStarts[x+1])+1] for x in [0...sceneStarts.length-1]][0]
-		sceneChooseButtonChecker(xCoord, yCoord, currTime)
-	# if a click occurs while no buttons are active, play/pause
-	else
-		switchPlay()
+	#dedupe taps. invalidate (0,0)
+	if !(xCoord == 0 and yCoord == 0)
+		# if a click occurs while buttons are active during scene, check if a button was clicked
+		if true in [Math.round(currTime) in  [Math.round(choiceStarts[x])... Math.round(sceneStarts[x+1])+1] for x in [0...sceneStarts.length-1]][0]
+			sceneChooseButtonChecker(xCoord, yCoord, currTime)
+		# if a click occurs while no buttons are active, play/pause
+		else
+			switchPlay()
 	
 # Function to handle back button
 backButton.on Events.Click, ->
@@ -404,6 +402,7 @@ window.setInterval( ->
 			)
 	# if at end of choice, pause
 	if currScene not in endScenes and currTime > sceneStarts[currScene + 1] - 4.0
+		print "wtf"
 		pauseHelper()
 , 50)
 
