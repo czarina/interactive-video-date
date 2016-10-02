@@ -1,4 +1,5 @@
 ## TRACKING LOGIC 
+loggingOn = false
 # generate sessionId (based on time in ms + random number)
 sessionId = Date.now() + '-' + Utils.randomNumber(0, 1000)
 
@@ -8,7 +9,7 @@ lastPlaying = false
 window.setInterval( ->
 	currPlaying = !videoLayer.player.paused
 	currTime = videoLayer.player.currentTime
-	#if has been playing for 750ms without any advancement in TS => buffer event
+	#if has been playing for 500ms without any advancement in TS => buffer event
 	if lastPlaying and currPlaying and currTime == lastTime
 		trackEvent('buffering',
 			currVideoTimestamp: currTime,
@@ -16,12 +17,12 @@ window.setInterval( ->
 		)
 	lastPlaying = currPlaying
 	lastTime = currTime
-, 750)
+, 500)
 
 # generic track event function for mixpanel
 trackEvent = (event, opts) ->
 	opts = opts || {}
-	if !_.startsWith(window.location.host, '127.0.0.1')
+	if !_.startsWith(window.location.host, '127.0.0.1') and loggingOn
 		mixpanel.track(event, _.extend(opts,
 			sessionId: sessionId,
 			timestamp: Date.now(),
@@ -195,6 +196,7 @@ switchPlay = () ->
 		playHelper()
 	else
 		pauseHelper()
+		#print "1"
 	
 # Function to handle play/pause button
 playButton.on Events.Click, ->
@@ -224,11 +226,9 @@ else
 # Resize layers appropriately every time there's an orientation change
 updateOrientation = (includeThumbnail) ->
 	if Screen.width / Screen.height > (16.0/9.0)
-		#print "height limited"
 		width = (16.0/9.0) * Screen.height
 		height = Screen.height
 	else
-		#print "width limited"
 		width = Screen.width
 		height = (9.0/16.0)*Screen.width
 	videoContainer.width = Screen.width
@@ -255,7 +255,6 @@ updateOrientation(true)
 # helper function for figuring out if a scene choose button is being pressed
 sceneChooseButtonChecker = (xCoord, yCoord, currTime) ->
 	
-	#print "checking for choice"
 	currScene = _.last(history)
 
 	chooseLeft = chooseCoords[currScene][0]
@@ -268,17 +267,15 @@ sceneChooseButtonChecker = (xCoord, yCoord, currTime) ->
 	
 	[xCoord, yCoord] = normalizeCoords(xCoord, yCoord)
 	pressedButton = false
-
+	
 	# logic for left button choice
 	if xCoord >= chooseLeftX[0] and xCoord <= chooseLeftX[1] and yCoord >= chooseLeftY[0] and yCoord <= chooseLeftY[1]
-		#print "pressed left"
 		currScene = _.last(history)
 		nextScene = sceneLinks[currScene][0]
 		pressedButton = true
 	
 	# logic for right button choice
 	else if xCoord >= chooseRightX[0] and xCoord <= chooseRightX[1] and yCoord >= chooseRightY[0] and yCoord <= chooseRightY[1]
-		#print "pressed right"
 		currScene = _.last(history)
 		nextScene = sceneLinks[currScene][1]
 		pressedButton = true
@@ -390,10 +387,10 @@ homeButton.on Events.Click, ->
 window.setInterval( ->
 	currTime = videoLayer.player.currentTime
 	currScene = _.last(history)
-	
-	# if at end of movie, pause
+	#print currTime
+	# if at end of movie, pause. only do this if in proper current scene
 	for pauseSegment in endScenePauseSegments
-		if currTime > pauseSegment[0] and currTime < pauseSegment[1]
+		if currTime > pauseSegment[0] and currTime < pauseSegment[1] and currTime > sceneStarts[currScene] and currTime < sceneStarts[currScene+1]
 			videoLayer.player.pause()
 			playButton.image = "images/play.png"
 			trackEvent('reached path end',
@@ -401,10 +398,9 @@ window.setInterval( ->
 				currScene: currScene
 			)
 	# if at end of choice, pause
-	if currScene not in endScenes and currTime > sceneStarts[currScene + 1] - 4.0
-		print "wtf"
+	if currScene not in endScenes and currTime > sceneStarts[currScene + 1] - 4.0 and currTime > sceneStarts[currScene] and currTime < sceneStarts[currScene+1]
 		pauseHelper()
-, 50)
+, 100)
 
 # white timeline bar
 # timeline = new Layer
