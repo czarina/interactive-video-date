@@ -1,5 +1,11 @@
+# share info
+Framer.Info =
+	title: "Invi = Interactive Video"
+	description: "It's time to play."
+    
 ## TRACKING LOGIC 
-loggingOn = false
+loggingOn = true
+
 # generate sessionId (based on time in ms + random number)
 sessionId = Date.now() + '-' + Utils.randomNumber(0, 1000)
 
